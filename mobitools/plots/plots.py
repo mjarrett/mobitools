@@ -7,6 +7,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+from matplotlib.font_manager import FontProperties
 
 from jinja2 import Environment, FileSystemLoader
 import time
@@ -50,30 +51,68 @@ mpl.rcParams['axes.spines.top'] = False
 mpl.rcParams['axes.edgecolor'] = ax_color
 mpl.rcParams['ytick.color'] = ax_color
 mpl.rcParams['xtick.color'] = ax_color
-
+mpl.rcParams['axes.labelcolor'] = ax_color
+mpl.rcParams['axes.labelsize'] = 13
 mpl.rcParams["figure.figsize"] = (7,5)
 
-try:
-    thdf = load_csv(f'/home/msj/mobi/taken_hourly_df.csv')
-    thdf.index = pd.to_datetime(thdf.index)
-    tddf = thdf.groupby(pd.Grouper(freq='d')).sum()
-except FileNotFoundError:
-    pass
+# try:
+#     thdf = load_csv(f'/home/msj/mobi/taken_hourly_df.csv')
+#     thdf.index = pd.to_datetime(thdf.index)
+#     tddf = thdf.groupby(pd.Grouper(freq='d')).sum()
+# except FileNotFoundError:
+#     pass
 
 today = datetime.datetime.now().strftime('%Y-%m-%d')
 thisyear = datetime.datetime.now().strftime('%Y')
 yday = (datetime.datetime.now() - datetime.timedelta(1)).strftime('%Y-%m-%d')
 yday_min7 = (datetime.datetime.now() - datetime.timedelta(8)).strftime('%Y-%m-%d')
 yday_min31 = (datetime.datetime.now() - datetime.timedelta(31)).strftime('%Y-%m-%d')
+yday_day = (datetime.datetime.now() - datetime.timedelta(1)).day
+yday_month = (datetime.datetime.now() - datetime.timedelta(1)).month
 
+def yoy_plot(df,fname):
+    
+    todaydf = df[(df.index.month==yday_month) & (df.index.day==yday_day)]
+    f,ax = plt.subplots()
+    ax.plot(df,color=ax_color,alpha=0.5)
+    ax.plot(todaydf.index,todaydf.values,color=fg_color)
+    s = ax.scatter(todaydf.index,todaydf.values,color=fg_color)
+    
+    ax.tick_params(axis='x',labelrotation=45)
+    
+    labelfont = FontProperties(weight='roman',size=13)
 
+    ax.set_ylabel('Trips')
+    
+
+    for c,i in zip(s.get_offsets().data,todaydf.index):
+        ax.annotate(i.strftime('%Y-%m-%d'),c,color=fg_color,
+                textcoords='offset points',xytext=(-60,-30),
+                bbox=dict(boxstyle="round",fc='w',ec='w',alpha=0.9),
+                fontproperties=labelfont
+                #arrowprops=dict(arrowstyle = '-|>',color='k',alpha=0.5)
+               )    
+        
+    f.tight_layout()
+    f.savefig(fname)
+    
 def simple_plot(df,fname,kind='line',highlight=False):
     f,ax = plt.subplots()
 
     if kind == 'line':
-        line = ax.plot(df.index,df.values,color=fg_color)
-        ax.fill_between(df.index,0,df.values,color=fg_color,alpha=0.8)
+        
+        if highlight:
+            line = ax.plot(df[:-24].index,df.values[:-24],color=fg_color,alpha=0.3)
+            ax.fill_between(df.index[:-24],0,df.values[:-24],color=fg_color,alpha=0.2)
+            line = ax.plot(df.index[-25:],df.values[-25:],color=fg_color)
+            ax.fill_between(df.index[-25:],0,df.values[-25:],color=fg_color,alpha=0.8)
+        else:    
+            line = ax.plot(df.index,df.values,color=fg_color)
+            ax.fill_between(df.index,0,df.values,color=fg_color,alpha=0.8)
 
+        ax.xaxis.set_major_formatter(mdates.DateFormatter("%A"))
+        ax.xaxis.get_ticklabels()[-1].set_visible(False) # removes the rightmost tick label
+            
     if kind=='bar':
         bars = ax.bar(df.index,df.values,color=fg_color)
         # set ticks every week

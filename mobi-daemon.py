@@ -2,17 +2,21 @@
 
 import sys
 sys.path.append('/home/msj/daemon/')
-from daemon import Daemon, log
-sys.path.append('/home/msj/twitter/')
-import twitter
+from daemoner import Daemon, log
+import twitterer as twitter
 from mobitools import *
 import time
 import datetime
-
+import random
 import os
 
 def g():
     twitter.warning("@vanbikesharebot is shutting down")
+    pass
+
+def pick_tweet_hour():
+    hours = list(range(8,15))
+    return random.choice(hours)
 
 def f(workingdir):
     log(workingdir)
@@ -20,7 +24,17 @@ def f(workingdir):
     log(workingdir)
     cycles = 0
     hour = datetime.datetime.now().hour
+    day = datetime.datetime.now().day
+    tweettime = 12
+    
     while True:
+        
+        ## Once a day, pick the hour for summary tweet to be sent
+        if day != datetime.datetime.now().day:
+            tweettime = pick_tweet_hour()
+            log(f"Today's tweet will be at: {tweettime}")
+            day = datetime.datetime.now().day
+            
         ## Once an hour, update CSV files and make plots
         if hour != datetime.datetime.now().hour:
             
@@ -46,11 +60,14 @@ def f(workingdir):
             # Reset hour to current hour
             hour = datetime.datetime.now().hour
             
-            if hour == 12:
+            if hour == tweettime:
                 try:
-                    daily_summary(workingdir)
+                    s,ims = daily_summary(workingdir)
+                    log(s)
+                    log(ims)
+                    twitterer.tweet('VanBikeShareBot',s,ims)
                 except Exception as e:
-                    twitter.warning("Daily @vanbikesharebot tweet failed")
+                    twitterer.warning("Daily @vanbikesharebot tweet failed")
                     log(e)
         log("Querying mobi....")
         query(workingdir)

@@ -133,7 +133,7 @@ def draw_plots(workingdir):
     yday_min7 = (datetime.datetime.now() - datetime.timedelta(8)).strftime('%Y-%m-%d')
     yday_min31 = (datetime.datetime.now() - datetime.timedelta(31)).strftime('%Y-%m-%d')
 
-
+    yoy_plot(tddf[:yday].sum(1),f'{workingdir}/images/year_over_year_yesterday.png')
 
     make_station_map(yday,f'{workingdir}/images/station_map_yesterday.png',workingdir)
     make_station_ani(yday,f'{workingdir}/images/station_ani_yesterday.gif',workingdir)
@@ -145,7 +145,7 @@ def draw_plots(workingdir):
 
     
     simple_plot(thdf.sum(1).iloc[-7*24:-1],f'{workingdir}/images/lastweek_hourly.png',kind='line')
-    simple_plot(thdf.sum(1).loc[yday_min7:yday],f'{workingdir}/images/lastweek_hourly_yesterday.png',kind='line')
+    simple_plot(thdf.sum(1).loc[yday_min7:yday],f'{workingdir}/images/lastweek_hourly_yesterday.png',kind='line',highlight=True)
     
     cumsum_plot(thdf[thisyear:],f'{workingdir}/images/today_cumsum.png')    
     cumsum_plot(thdf[thisyear:yday],f'{workingdir}/images/yesterday_cumsum.png')
@@ -196,7 +196,7 @@ def get_status(workingdir):
 
     return {'bikes':n_bikes,'stations':n_stations}    
     
-def daily_summary(workingdir,tweet=True):
+def daily_summary(workingdir):
     # Get stats for text
     yesterday = datetime.date.today() - datetime.timedelta(1)
     d = yesterday.strftime('%Y-%m-%d')
@@ -286,8 +286,8 @@ Least used station: {} {} ({} trips)
 
     # Upload images
     ims = [f'{workingdir}/images/lastweek_hourly_yesterday.png',
-           f'{workingdir}/images/yesterday_cumsum.png',
            f'{workingdir}/images/lastmonth_daily_yesterday.png',
+           f'{workingdir}/images/year_over_year_yesterday.png',
            f'{workingdir}/images/station_map_yesterday.png'
                ]
         #media_ids = [api.media_upload(x).media_id for x in ims]
