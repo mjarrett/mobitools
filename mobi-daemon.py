@@ -1,9 +1,8 @@
 #!/home/msj/miniconda3/bin/python3
 
 import sys
-sys.path.append('/home/msj/daemon/')
 from daemoner import Daemon, log
-import twitterer as twitter
+import twitterer
 from mobitools import *
 import time
 import datetime
@@ -11,7 +10,7 @@ import random
 import os
 
 def g():
-    twitter.warning("@vanbikesharebot is shutting down")
+    twitterer.warning("@vanbikesharebot is shutting down")
     pass
 
 def pick_tweet_hour():
