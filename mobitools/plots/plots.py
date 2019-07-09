@@ -80,14 +80,23 @@ def yoy_plot(df,fname):
     
     ax.tick_params(axis='x',labelrotation=45)
     
-    labelfont = FontProperties(weight='roman',size=13)
+    labelfont = FontProperties(weight='roman',size=12)
 
     ax.set_ylabel('Trips')
     
-
-    for c,i in zip(s.get_offsets().data,todaydf.index):
-        ax.annotate(i.strftime('%Y-%m-%d'),c,color=fg_color,
-                textcoords='offset points',xytext=(-60,-30),
+    def get_text(date):
+        wdf = vw.get_monthly_weather(date.strftime('%Y'),date.strftime('%m'))
+        text = f"{date.strftime('%A, %B %d %Y')}\nDaily High: {wdf.loc[date.strftime('%Y-%m-%d'),'Max Temp']}°C\nPrecipitation: {wdf.loc[date.strftime('%Y-%m-%d'),'Total Precipmm']}mm"
+        return text
+    
+    try:
+        texts = [get_text(x) for x in todaydf.index]
+    except:
+        texts = [x for x in todaydf.index]
+        
+    for c,text in zip(s.get_offsets().data,texts):
+        ax.annotate(text,c,color=fg_color,
+                textcoords='offset points',xytext=(-60,-50),
                 bbox=dict(boxstyle="round",fc='w',ec='w',alpha=0.9),
                 fontproperties=labelfont
                 #arrowprops=dict(arrowstyle = '-|>',color='k',alpha=0.5)
