@@ -14,6 +14,7 @@ def load_csv(f):
 
 def get_dailydf(d):
     ddf = pd.read_csv('{}/daily_mobi_dataframe.csv'.format(d),parse_dates=['time'])
+    ddf = ddf.dropna(subset=['coordinates'])  # necessary in case coords ara NaN
     ddf['coordinates'] = ddf['coordinates'].map(lambda x: x.split(','))
     ddf['coordinates'] = ddf['coordinates'].map(lambda x: [float(x[0]),float(x[1])])
     return ddf

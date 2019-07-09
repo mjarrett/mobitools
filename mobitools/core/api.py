@@ -136,7 +136,7 @@ def draw_plots(workingdir):
     yoy_plot(tddf[:yday].sum(1),f'{workingdir}/images/year_over_year_yesterday.png')
 
     make_station_map(yday,f'{workingdir}/images/station_map_yesterday.png',workingdir)
-    make_station_ani(yday,f'{workingdir}/images/station_ani_yesterday.gif',workingdir)
+    #make_station_ani(yday,f'{workingdir}/images/station_ani_yesterday.gif',workingdir)
   
     weather_plot(tddf.sum(1).iloc[-365:],f'{workingdir}/images/lastyear_daily.png',kind='line')
     weather_plot(tddf.sum(1)['2018-01':],f'{workingdir}/images/2018-current_daily.png',kind='line')
