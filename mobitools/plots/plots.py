@@ -55,22 +55,13 @@ mpl.rcParams['axes.labelcolor'] = ax_color
 mpl.rcParams['axes.labelsize'] = 13
 mpl.rcParams["figure.figsize"] = (7,5)
 
-# try:
-#     thdf = load_csv(f'/home/msj/mobi/taken_hourly_df.csv')
-#     thdf.index = pd.to_datetime(thdf.index)
-#     tddf = thdf.groupby(pd.Grouper(freq='d')).sum()
-# except FileNotFoundError:
-#     pass
 
-today = datetime.datetime.now().strftime('%Y-%m-%d')
-thisyear = datetime.datetime.now().strftime('%Y')
-yday = (datetime.datetime.now() - datetime.timedelta(1)).strftime('%Y-%m-%d')
-yday_min7 = (datetime.datetime.now() - datetime.timedelta(8)).strftime('%Y-%m-%d')
-yday_min31 = (datetime.datetime.now() - datetime.timedelta(31)).strftime('%Y-%m-%d')
-yday_day = (datetime.datetime.now() - datetime.timedelta(1)).day
-yday_month = (datetime.datetime.now() - datetime.timedelta(1)).month
+
 
 def yoy_plot(df,fname):
+    
+    yday_day = (datetime.datetime.now() - datetime.timedelta(1)).day
+    yday_month = (datetime.datetime.now() - datetime.timedelta(1)).month
     
     todaydf = df[(df.index.month==yday_month) & (df.index.day==yday_day)]
     f,ax = plt.subplots()
@@ -175,6 +166,8 @@ def weather_plot(df,fname,kind='line',highlight=False):
 
     
 def cumsum_plot(df,fname): 
+    today = datetime.datetime.now().strftime('%Y-%m-%d')
+    thisyear = datetime.datetime.now().strftime('%Y')
     f,ax = plt.subplots()
     def cumsum(df):
 
