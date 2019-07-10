@@ -24,7 +24,7 @@ def f(workingdir):
     cycles = 0
     hour = datetime.datetime.now().hour
     day = datetime.datetime.now().day
-    tweettime = 12
+    tweettime = -1 # avoid double tweeting if you restart the daemon
     
     while True:
         
