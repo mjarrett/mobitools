@@ -9,6 +9,8 @@ import datetime
 import random
 import os
 
+logfile='mobi-daemon.log'
+
 def g():
     twitterer.warning("@vanbikesharebot is shutting down")
     pass
@@ -18,9 +20,10 @@ def pick_tweet_hour():
     return random.choice(hours)
 
 def f(workingdir):
-    log(workingdir)
+    log('v2',file=logfile)
+    log(workingdir,file=logfile)
     workingdir = os.path.abspath(workingdir)
-    log(workingdir)
+    log(workingdir,file=logfile)
     cycles = 0
     hour = datetime.datetime.now().hour
     day = datetime.datetime.now().day
@@ -31,44 +34,51 @@ def f(workingdir):
         ## Once a day, pick the hour for summary tweet to be sent
         if day != datetime.datetime.now().day:
             tweettime = pick_tweet_hour()
-            log(f"Today's tweet will be at: {tweettime}")
+            log(f"Today's tweet will be at: {tweettime}",file=logfile)
+            twitterer.warning(f"Today's @vanbikesharebot tweet will be at: {tweettime}")
             day = datetime.datetime.now().day
             
         ## Once an hour, update CSV files and make plots
         if hour != datetime.datetime.now().hour:
             
             ## Update CSV files (taken_daily_df.csv)
-            log("Updating CSV files")
+            log("Updating CSV files",file=logfile)
             update_csv(workingdir)
             query(workingdir)  # This is necessary to create the daily dataframe which is needed to create plots (fix this)
             
             
-            log("Drawing plots")
+            log("Drawing plots",file=logfile)
             try:
                 draw_plots(workingdir)
-                log("Finished plots")
+                log("Finished plots",file=logfile)
             except Exception as e:
-                log("draw_plots() failed due to the following exception:")
-                log(e)
+                log("draw_plots() failed due to the following exception:",file=logfile)
+                log(e,file=logfile)
                 
             
+            query(workingdir)
+            log("Updating stations",file=logfile)
             
-            log("Updating stations")
-            update_stations(workingdir)
-            
+            try:
+                update_stations(workingdir)
+            except Exception as e:
+                log("Update stations filed due to the following exception:",file=logfile)
+                log(e,file=logfile)
+                    
+                
             # Reset hour to current hour
             hour = datetime.datetime.now().hour
             
             if hour == tweettime:
                 try:
                     s,ims = daily_summary(workingdir)
-                    log(s)
-                    log(ims)
+                    log(s,file=logfile)
+                    log(ims,file=logfile)
                     twitterer.tweet('VanBikeShareBot',s,ims)
                 except Exception as e:
                     twitterer.warning("Daily @vanbikesharebot tweet failed")
-                    log(e)
-        log("Querying mobi....")
+                    log(e,file=logfile)
+        log("Querying mobi....",file=logfile)
         query(workingdir)
         
         cycles += 1
