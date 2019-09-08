@@ -183,7 +183,7 @@ def update_stations(workingdir):
     except:
         stations_df = avail_df
 
-        
+    
     stations_df.to_csv(workingdir+'/stations_daily_df.csv')
 
 def get_status(workingdir):
@@ -244,6 +244,9 @@ def daily_summary(workingdir):
     # Get other stats
     status = get_status(workingdir)
 
+    # Hack to ignore summer cinema station (it's always listed as active but it's not)
+    sdf.loc[sdf.name=='Summer Cinema Mobi Bike Valet (brought to you by BEST/Translink)','active'] = False
+    
     active_stations = sdf.loc[sdf['active'],'name']
 
     a24df = ahdf.loc[d,active_stations].sum()
@@ -256,7 +259,6 @@ def daily_summary(workingdir):
 
     nstationsmax = len(a24df[a24df == maxstationtrips])
     nstationsmin = len(a24df[a24df == minstationtrips])
-
 
 
     if nstationsmax > 1:
@@ -295,3 +297,28 @@ Least used station: {} {} ({} trips)
 
     
     return s, ims
+
+def restore_from_backup(ddffs):
+
+    ddf = pd.read_csv(ddffs[0])
+
+    a,b = breakdown_ddf(ddf)
+    thdf = a.groupby(pd.Grouper(freq='H')).sum()
+    rhdf = b.groupby(pd.Grouper(freq='H')).sum()
+
+    for ddff in ddffs[1:]:
+        print(ddff)
+        ddf = pd.read_csv(ddff)
+        a,b = breakdown_ddf(ddf)
+
+        thdf = pd.concat([thdf,a.groupby(pd.Grouper(freq='H')).sum()])
+        rhdf = pd.concat([rhdf,b.groupby(pd.Grouper(freq='H')).sum()])
+
+        thdf = thdf[~thdf.index.duplicated(keep='last')]
+        rhdf = rhdf[~rhdf.index.duplicated(keep='last')]
+
+    #thdf = pd.concat([back_thdf,thdf])
+    #rhdf = pd.concat([back_rhdf,rhdf])
+
+    thdf.to_csv('taken_hourly_df_restored.csv')
+    rhdf.to_csv('returned_hourly_df_restored.csv') 
