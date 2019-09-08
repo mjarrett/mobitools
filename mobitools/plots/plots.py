@@ -125,6 +125,7 @@ def simple_plot(df,fname,kind='line',highlight=False):
     ax.set_ylabel('Trips')    
     f.tight_layout()
     f.savefig(fname)
+    return f,ax
 
 def weather_plot(df,fname,kind='line',highlight=False):
     f,(ax,wax) = plt.subplots(2,sharex=True,gridspec_kw={'height_ratios':[4.5,1]})
@@ -163,7 +164,7 @@ def weather_plot(df,fname,kind='line',highlight=False):
     f.tight_layout()
     f.savefig(fname)
     
-
+    return f,ax
     
 def cumsum_plot(df,fname): 
     today = datetime.datetime.now().strftime('%Y-%m-%d')
@@ -198,6 +199,7 @@ def cumsum_plot(df,fname):
     ax.tick_params(axis='x',labelrotation=45)
     f.tight_layout()
     f.savefig(fname)
+    return f,ax
     
 class GeoPlot():
     def __init__(self,n=1,m=0):
@@ -265,16 +267,21 @@ def make_station_map(date,fname,workingdir):
     rhdf = load_csv(workingdir+'/returned_hourly_df.csv')
     tddf = thdf.groupby(pd.Grouper(freq='d')).sum()
     rddf = rhdf.groupby(pd.Grouper(freq='d')).sum()
-    addf = tddf + rddf
-    ddf = get_dailydf(workingdir)
+    
     
 
-    # Get day's trip counts
-    trips = addf.loc[date].reset_index()
-    trips.columns = ['name','trips']
+
 
     
     sdf = get_stationsdf(workingdir)
+    
+    
+    # Get day's trip counts
+    addf = tddf + rddf
+    addf = addf[sdf.loc[sdf['active'],'name']]
+    trips = addf.loc[date].reset_index()
+    trips.columns = ['name','trips']   
+    
     sdf = pd.merge(trips, sdf, how='inner',on='name')
     #print(sdf.loc[0,'coordinates'][0]/2)
     
