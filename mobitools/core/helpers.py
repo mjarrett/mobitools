@@ -13,10 +13,19 @@ def load_csv(f):
     return df
 
 def get_dailydf(d):
-    ddf = pd.read_csv('{}/daily_mobi_dataframe.csv'.format(d),parse_dates=['time'])
-    ddf = ddf.dropna(subset=['coordinates'])  # necessary in case coords ara NaN
-    ddf['coordinates'] = ddf['coordinates'].map(lambda x: x.split(','))
-    ddf['coordinates'] = ddf['coordinates'].map(lambda x: [float(x[0]),float(x[1])])
+    try:
+        ddf = pd.read_csv(d,parse_dates=['time'])
+    except:
+        ddf = pd.read_csv('{}/daily_mobi_dataframe.csv'.format(d),parse_dates=['time'])
+    
+    ddf = ddf.dropna(subset=['name','time','id'])
+    
+    # Place unlocated stations at the nexus of the world
+    ddf.coordinates = ddf.coordinates.fillna("0,0")
+    # sometimes there are letters in the coords field :/ Get rid of them
+    ddf.coordinates = ddf.coordinates.replace(regex=True,to_replace=r'[A-Za-z]',value=r'')
+    ddf.coordinates = ddf.coordinates.map(lambda x: x.split(','))
+    ddf.coordinates = ddf.coordinates.map(lambda x: [float(x[0]),float(x[1])])
     return ddf
     
 # ddf = get_dailydf('/data/mobi/data/')
@@ -52,6 +61,7 @@ def update_stations_df(workingdir):
     sdf = pd.concat([sdf,ddf],sort=True)
     sdf['active'] = [True if x in ddf.index else False for x in sdf.index]
     sdf = sdf[~sdf.index.duplicated(keep='last')]
+    sdf.loc['Summer Cinema Mobi Bike Valet (brought to you by BEST/Translink)','active'] = False
     sdf = sdf.reset_index()
     
     sdf = add_station_coords_sdf(sdf)
@@ -82,3 +92,5 @@ def add_station_coords_sdf(sdf):
     del sdf['coordinates epsg']
 
     return sdf
+
+   
