@@ -3,7 +3,6 @@ import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
 import shapely
 import pyproj
-#import mobitools as mobi
 
 def prep_sys_df(f): 
     
@@ -99,3 +98,11 @@ def make_con_df(df):
     condf['start station'] = condf['stations'].map(lambda x: x[0])
     condf['stop station'] = condf['stations'].map(lambda x: x[1])
     return condf
+
+def make_thdf(df):
+    thdf = df.pivot_table(index='Departure', 
+                     columns='Departure station', 
+                     values='Account',
+                     fill_value=0, 
+                     aggfunc='count')
+    return thdf
