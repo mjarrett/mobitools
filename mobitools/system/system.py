@@ -58,7 +58,7 @@ def add_station_coords(df,sdf,bidirectional=True):
              isn't in the stations_df.json file"
     """
     
-    
+    sdf = sdf[sdf['coordinates'].map(lambda x: x[0]>1)]   # drop stations that don't have a sensible latitude
 
     df = pd.merge(df,sdf[['name','neighbourhood','coordinates']],how='inner',left_on='Departure station',right_on='name',
                   suffixes=('_x',' departure'))
