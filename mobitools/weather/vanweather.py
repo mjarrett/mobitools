@@ -34,10 +34,14 @@ def get_monthly_weather(year,month):
     return df
 
 def get_weather_range(time1,time2):
-    [year1,month1] = [int(x) for x in time1.split('-')]
-    [year2,month2] = [int(x) for x in time2.split('-')]
 
+    if type(time1) == str and type(time2) == str:
+        [year1,month1] = [int(x) for x in time1.split('-')]
+        [year2,month2] = [int(x) for x in time2.split('-')]
 
+    elif len(time1) == 2 and len(time2) == 2:
+        year1, month1 = time1[0], time1[1]
+        year2, month2 = time2[0], time2[1]
 
     df = pd.DataFrame()
 
