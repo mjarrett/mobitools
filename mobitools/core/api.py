@@ -246,6 +246,7 @@ def daily_summary(workingdir):
 
     # Hack to ignore summer cinema station (it's always listed as active but it's not)
     sdf.loc[sdf.name=='Summer Cinema Mobi Bike Valet (brought to you by BEST/Translink)','active'] = False
+    sdf.loc[sdf['name']=='Temporary Events Station','active'] = False
     
     active_stations = sdf.loc[sdf['active'],'name']
 
