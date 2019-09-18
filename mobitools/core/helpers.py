@@ -1,10 +1,5 @@
 import pandas as pd
-
-import cartopy.crs as ccrs
-import cartopy.io.shapereader as shpreader
-import shapely
-import pyproj
-
+import geopandas 
 
 
 
@@ -28,13 +23,9 @@ def get_dailydf(d):
     ddf.coordinates = ddf.coordinates.map(lambda x: [float(x[0]),float(x[1])])
     return ddf
     
-# ddf = get_dailydf('/data/mobi/data/')
-# print(ddf['coordinates'])
 
 def get_stationsdf(workingdir):
-
-    sdf = pd.read_json("{}/stations_df.json".format(workingdir))
-    sdf['coordinates'] = sdf['coordinates'].map(lambda x: tuple(x))
+    sdf = geopandas.read_file(f'{workingdir}/stations_df.geojson')
     return sdf
 
 def get_active_stations(workingdir):
@@ -43,54 +34,56 @@ def get_active_stations(workingdir):
     active_stations = list(sdf.loc[sdf['active']==True,'name'])
     return active_stations
 
-def update_stations_df(workingdir):
-    ddf = get_dailydf(workingdir)
-    try:
-        sdf = pd.read_json('{}/stations_df.json'.format(workingdir))
-        sdf = sdf.set_index('name')
-    except ValueError:
-        sdf = pd.DataFrame(columns=['name','coordinates','active'])
-        sdf = sdf.set_index('name')
 
-    ddf = ddf.drop_duplicates('name').copy()
-    ddf = ddf[['coordinates','name']]
-    ddf['coordinates'] = ddf['coordinates'].map(lambda x:tuple(x))
-    ddf = ddf.set_index('name')
+def add_station_neighbourhoods(workingdir,sdf):
 
-    sdf['coordinates'] = sdf['coordinates'].map(lambda x:tuple(x))
-    sdf = pd.concat([sdf,ddf],sort=True)
-    sdf['active'] = [True if x in ddf.index else False for x in sdf.index]
-    sdf = sdf[~sdf.index.duplicated(keep='last')]
-    sdf.loc['Summer Cinema Mobi Bike Valet (brought to you by BEST/Translink)','active'] = False
-    sdf = sdf.reset_index()
-    
-    sdf = add_station_coords_sdf(sdf)
-    
-    sdf.to_json('{}/stations_df.json'.format(workingdir))
-    return sdf
+    gdf = geopandas.read_file(f'{workingdir}/shapes/local_area_boundary.shp')
 
-def add_station_coords_sdf(sdf):
-    epsg  = pyproj.Proj(init='epsg:26910')
-    pc = pyproj.Proj(proj='latlon')
+    def f(point):
+        hoods = [hoodname for hoodname,hoodpoly in zip(gdf['NAME'],gdf['geometry']) if hoodpoly.contains(point) ]
 
-    shapef = '/home/msj/shapes/local_area_boundary.shp'
-    shapes = list(shpreader.Reader(shapef).geometries())
-    records = list(shpreader.Reader(shapef).records())
-
-
-    sdf['coordinates epsg'] = sdf['coordinates'].map(lambda x: pyproj.transform(pc,epsg, x[1],x[0]) )
-
-    def f(coord):
-        hoods =  [r.attributes['NAME'] for s,r in zip(shapes,records) if s.contains(shapely.geometry.Point(*coord))]
         if len(hoods) == 0:
             return "Stanley Park"
         else:
             return hoods[0]
 
 
-    sdf['neighbourhood'] = sdf['coordinates epsg'].map(lambda x: f(x))
-    del sdf['coordinates epsg']
+    sdf['neighbourhood'] = sdf['geometry'].map(lambda x: f(x))
 
     return sdf
 
-   
+def update_stations_df(workingdir):
+    ddf = mobi.get_dailydf(workingdir)
+    ddf = ddf.drop_duplicates('name').copy()
+    ddf = ddf[['coordinates','name']]
+    ddf['coordinates'] = ddf['coordinates'].map(lambda x:tuple(x))
+    ddf = ddf.set_index('name')
+    ddf['lat'] = ddf['coordinates'].map(lambda x: x[0])
+    ddf['long'] = ddf['coordinates'].map(lambda x: x[1])
+    
+    ddf = geopandas.GeoDataFrame(ddf,
+                                 geometry=geopandas.points_from_xy(ddf['long'],ddf['lat']), 
+                                 crs={'init' :'epsg:4326'}
+                                )
+
+    ddf = ddf[ddf.lat>0]
+    ddf['active'] = True
+    ddf = ddf[['geometry','active']].reset_index()
+    ddf = ddf.to_crs({'init':'epsg:26910'})
+    
+    try: # If file already exists
+        sdf = geopandas.read_file('stations_df.geojson')
+        sdf = pd.concat([sdf,ddf],sort=True)
+        sdf['active'] = [True if x in ddf.index else False for x in sdf.index]
+        sdf = sdf[~sdf.index.duplicated(keep='last')]
+    except ValueError:
+        sdf = ddf
+
+    
+    sdf.loc[sdf['name']=='Summer Cinema Mobi Bike Valet (brought to you by BEST/Translink)','active'] = False
+    sdf.loc[sdf['name']=='Temporary Events Station','active'] = False
+    Temporary Events Station
+    sdf = add_station_neighbourhoods(workgindir,sdf)
+
+    sdf.to_file(f"{workingdir}/stations_df.geojson", driver='GeoJSON')
+    return sdf
