@@ -35,6 +35,13 @@ def get_active_stations(workingdir):
     return active_stations
 
 
+def sdf_to_latlong(sdf):
+    sdf = sdf.to_crs(epsg=4326)
+    sdf['coordinates'] = sdf['geometry'].map(lambda x: (x.y,x.x))
+    del sdf['geometry']
+    return sdf
+
+
 def add_station_neighbourhoods(workingdir,sdf):
 
     gdf = geopandas.read_file(f'{workingdir}/shapes/local_area_boundary.shp')
@@ -51,6 +58,9 @@ def add_station_neighbourhoods(workingdir,sdf):
     sdf['neighbourhood'] = sdf['geometry'].map(lambda x: f(x))
 
     return sdf
+
+
+
 
 def update_stations_df(workingdir):
     ddf = mobi.get_dailydf(workingdir)

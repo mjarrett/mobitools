@@ -1,8 +1,5 @@
 import pandas as pd
-import cartopy.crs as ccrs
-import cartopy.io.shapereader as shpreader
-import shapely
-import pyproj
+
 
 def prep_sys_df(f): 
     
@@ -58,6 +55,12 @@ def add_station_coords(df,sdf,bidirectional=True):
              isn't in the stations_df.json file"
     """
     
+    # Convert geometry to lat/long coords and drop geometry columns
+    sdf = sdf.to_crs(epsg=4326)
+    sdf['coordinates'] = sdf['geometry'].map(lambda x: (x.y,x.x))
+    del sdf['geometry']
+    
+    
     sdf = sdf[sdf['coordinates'].map(lambda x: x[0]>1)]   # drop stations that don't have a sensible latitude
 
     df = pd.merge(df,sdf[['name','neighbourhood','coordinates']],how='inner',left_on='Departure station',right_on='name',
@@ -106,3 +109,4 @@ def make_thdf(df):
                      fill_value=0, 
                      aggfunc='count')
     return thdf
+
