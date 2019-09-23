@@ -63,7 +63,7 @@ def add_station_neighbourhoods(workingdir,sdf):
 
 
 def update_stations_df(workingdir):
-    ddf = mobi.get_dailydf(workingdir)
+    ddf = get_dailydf(workingdir)
     ddf = ddf.drop_duplicates('name').copy()
     ddf = ddf[['coordinates','name']]
     ddf['coordinates'] = ddf['coordinates'].map(lambda x:tuple(x))
