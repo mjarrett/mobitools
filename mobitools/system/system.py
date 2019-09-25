@@ -69,7 +69,7 @@ def add_station_coords(df,sdf,bidirectional=True):
     df = pd.merge(df,sdf[['name','neighbourhood','coordinates']],how='inner',left_on='Return station',right_on='name',
                   suffixes=(' departure',' return'))
 
-
+    
 
     df = df.rename(columns={'neighbourhood return':'Return neighbourhood',
                     'neighbourhood departure':'Departure neighbourhood',
@@ -81,7 +81,11 @@ def add_station_coords(df,sdf,bidirectional=True):
 
     df['stations coords'] = df[['Departure coords','Return coords']].values.tolist()
     df['stations'] = df[['Departure station','Return station']].values.tolist()
-    df['stations coords'] = df['stations coords'].map(lambda x: tuple(sorted(x)))
+    
+    if bidirectional:
+        df['stations coords'] = df['stations coords'].map(lambda x: tuple(sorted(x)))
+    else:
+        df['stations coords'] = df['stations coords'].map(lambda x: tuple(x))
     df['stations'] = df['stations'].map(lambda x: tuple(sorted(x)))
     
 
@@ -91,6 +95,8 @@ def add_station_coords(df,sdf,bidirectional=True):
 
 
 def make_con_df(df):
+    
+    
     condf = df.groupby(['stations coords','stations']).size()
 
     condf = condf.reset_index()
@@ -109,4 +115,19 @@ def make_thdf(df):
                      fill_value=0, 
                      aggfunc='count')
     return thdf
+
+def make_rhdf(df):
+    thdf = df.pivot_table(index='Return', 
+                     columns='Return station', 
+                     values='Account',
+                     fill_value=0, 
+                     aggfunc='count')
+    return thdf
+
+def make_ahdf(df):
+    thdf = make_thdf(df)
+    rhdf = make_rhdf(df)
+    
+    return rhdf.reindex(thdf.index).fillna(0) + thdf
+
 

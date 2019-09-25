@@ -93,7 +93,7 @@ def update_stations_df(workingdir):
     sdf.loc[sdf['name']=='Summer Cinema Mobi Bike Valet (brought to you by BEST/Translink)','active'] = False
     sdf.loc[sdf['name']=='Temporary Events Station','active'] = False
 
-    sdf = add_station_neighbourhoods(workgindir,sdf)
+    sdf = add_station_neighbourhoods(workingdir,sdf)
 
     sdf.to_file(f"{workingdir}/stations_df.geojson", driver='GeoJSON')
     return sdf

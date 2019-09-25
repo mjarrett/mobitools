@@ -244,7 +244,7 @@ def make_station_map(date,fname,workingdir):
     
     
     sdf.plot(ax=ax,markersize=list(sdf['trips']), alpha=0.7, zorder=100, color=fg_color2)
-    f.savefig(fname,bbox_inches='tight',pad_inches=0.0,transparent=True)
+    f.savefig(fname,bbox_inches='tight',pad_inches=0.0,transparent=False)
     
     
     
