@@ -74,7 +74,7 @@ def yoy_plot(df,fname):
     
     def get_text(date):
         wdf = vw.get_monthly_weather(date.strftime('%Y'),date.strftime('%m'))
-        text = f"{date.strftime('%A, %B %d %Y')}\nDaily High: {wdf.loc[date.strftime('%Y-%m-%d'),'Max Temp']}°C\nPrecipitation: {wdf.loc[date.strftime('%Y-%m-%d'),'Total Precipmm']}mm"
+        text = f"{date.strftime('%A, %b %d %Y')}\nDaily High: {wdf.loc[date.strftime('%Y-%m-%d'),'Max Temp']}°C\nPrecipitation: {wdf.loc[date.strftime('%Y-%m-%d'),'Total Precipmm']}mm"
         return text
     
     try:
