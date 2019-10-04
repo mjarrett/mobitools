@@ -10,7 +10,7 @@ import urllib
 import datetime
 from mobitools.core.helpers import *
 from mobitools.plots.plots import *
-
+import timeout_decorator
 
 
 def breakdown_ddf(dailydf,workingdir='./'):
@@ -97,7 +97,9 @@ def update_csv(workingdir):
         pass
     os.rename('{}/daily_mobi_dataframe.csv'.format(workingdir),
               '{}/backups/daily_mobi_dataframe.csv_BAK_{}'.format(workingdir,timestr))
+
     
+@timeout_decorator.timeout(10) 
 def query(workingdir):
     daily_df = '{}/daily_mobi_dataframe.csv'.format(workingdir)
 

@@ -44,8 +44,10 @@ def f(workingdir):
             ## Update CSV files (taken_daily_df.csv)
             log("Updating CSV files",file=logfile)
             update_csv(workingdir)
-            query(workingdir)  # This is necessary to create the daily dataframe which is needed to create plots (fix this)
-            
+            try:
+                query(workingdir)  # This is necessary to create the daily dataframe which is needed to create plots (fix this)
+            except:
+                log("query failed")
             
             log("Drawing plots",file=logfile)
             try:
@@ -55,9 +57,11 @@ def f(workingdir):
                 log("draw_plots() failed due to the following exception:",file=logfile)
                 log(e,file=logfile)
                 
-            
-            query(workingdir)
-            log("Updating stations",file=logfile)
+            try:
+                query(workingdir)
+                log("Updating stations",file=logfile)
+            except:
+                log("query failed")
             
             try:
                 update_stations(workingdir)
@@ -78,9 +82,12 @@ def f(workingdir):
                 except Exception as e:
                     twitterer.warning("Daily @vanbikesharebot tweet failed")
                     log(e,file=logfile)
-        log("Querying mobi....",file=logfile)
-        query(workingdir)
-        
+                    
+        try:
+            log("Querying mobi....",file=logfile)
+            query(workingdir)
+        except:
+            log("Query failed")
         cycles += 1
         time.sleep(60)
 
