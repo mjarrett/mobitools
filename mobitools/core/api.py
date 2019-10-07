@@ -78,7 +78,7 @@ def update_dataframes(takendf, returneddf,workingdir='./'):
     returned_hourly_df = returned_hourly_df.groupby(returned_hourly_df.index).sum()
     returned_hourly_df.to_csv('{}/returned_hourly_df.csv'.format(workingdir))
 
-
+@timeout_decorator.timeout(60*2) 
 def update_csv(workingdir):
      ## Update CSV files (taken_daily_df.csv)
     update_stations_df(workingdir)
@@ -124,6 +124,7 @@ def query(workingdir):
     del df
     return True
 
+@timeout_decorator.timeout(60*5) 
 def draw_plots(workingdir):
 
     thdf = load_csv(f'{workingdir}/taken_hourly_df.csv')
@@ -198,6 +199,8 @@ def get_status(workingdir):
 
     return {'bikes':n_bikes,'stations':n_stations}    
     
+    
+@timeout_decorator.timeout(60*5) 
 def daily_summary(workingdir):
     # Get stats for text
     yesterday = datetime.date.today() - datetime.timedelta(1)

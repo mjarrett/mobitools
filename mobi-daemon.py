@@ -43,7 +43,10 @@ def f(workingdir):
             
             ## Update CSV files (taken_daily_df.csv)
             log("Updating CSV files",file=logfile)
-            update_csv(workingdir)
+            try:
+                update_csv(workingdir)
+            except:
+                log("update_csv failed")
             try:
                 query(workingdir)  # This is necessary to create the daily dataframe which is needed to create plots (fix this)
             except:
